@@ -1,94 +1,214 @@
-<!DOCTYPE html>
-<html lang="en"> 
+<?php
+session_start();
+// connect to database
+$con = mysqli_connect("localhost", "root", "", "Nurucoin");
+if (!$con) {
+  die("Error connecting to database: " . mysqli_connect_error());
+}
+$errors = array();
+	// variable declaration
+  function getRealUserIp(){
+      switch(true){
+        case (!empty($_SERVER['HTTP_X_REAL_IP'])) : return $_SERVER['HTTP_X_REAL_IP'];
+        case (!empty($_SERVER['HTTP_CLIENT_IP'])) : return $_SERVER['HTTP_CLIENT_IP'];
+        case (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) : return $_SERVER['HTTP_X_FORWARDED_FOR'];
+        default : return $_SERVER['REMOTE_ADDR'];
+      }
+   }
+  /// IP address code Ends /////
+
+if(isset($_POST['login_btn'])){
+
+$customer_email = $_POST['c_email'];
+
+$customer_pass = $_POST['c_pass'];
+if (empty($customer_email)) { array_push($errors, "Email is required"); }
+  if (empty($customer_pass)) { array_push($errors, "Password is required"); }
+  else{
+
+$select_customer = "SELECT  * FROM customers WHERE customer_email='$customer_email'";
+
+$run_customer = mysqli_query($con,$select_customer);
+
+$check_customer = mysqli_num_rows($run_customer);
+
+$row_customer = mysqli_fetch_array($run_customer);
+
+$hash_password = $row_customer["customer_pass"];
+
+$customer_role = $row_customer["customer_role"];
+
+
+$decryt_password = password_verify($customer_pass, $hash_password);
+
+if($decryt_password == 0){
+  ?>
+  <div class="popup popup--icon -error js_error-popup popup--visible">
+  <div class="popup__background"></div>
+  <div class="popup__content">
+    <h3 class="popup__content__title">
+      Error 
+    </h1>
+    <p>Invalid Email or Password</p>
+    <p>
+      <a href="index.php"><button class="button button--error" data-for="js_error-popup">Close</button></a>
+    </p>
+  </div>
+</div>
+
+<?php
+}
+elseif ($customer_role == 1) {
+  array_push($errors, "Blocked contact customer care");
+}
+else {
+
+    $_SESSION['customer_email']=$customer_email;
+?>
+  <div class="popup popup--icon -success js_success-popup popup--visible">
+  <div class="popup__background"></div>
+  <div class="popup__content">
+    <h3 class="popup__content__title">
+      Success 
+    </h1>
+    <p>Login Successfully</p>
+    <p>
+    
+     <?php echo "<script>setTimeout(\"location.href = 'dashboard.php';\",1500);</script>"; ?>
+    </p>
+  </div>
+</div>
+<?php
+
+  }
+
+}
+}
+?>
+
+
+
+<!doctype html>
+<html lang="en">
+
 <head>
-    <title>Noble</title>
-    
-    <!-- Meta -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <meta name="description" content="Portal - Bootstrap 5 Admin Dashboard Template For Developers">
-    <meta name="author" content="Xiaoying Riley at 3rd Wave Media">    
-    <link rel="shortcut icon" href="favicon.ico"> 
-    
-    <!-- FontAwesome JS-->
-    <script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
-    
-    <!-- App CSS -->  
-    <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--favicon-->
+	<link rel="icon" href="assets/images/favicon-32x32.png" type="image/png" />
+	<!--plugins-->
+	<link href="assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
+	<link href="assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet" />
+	<link href="assets/plugins/metismenu/css/metisMenu.min.css" rel="stylesheet" />
+	<!-- loader-->
+	<link href="assets/css/pace.min.css" rel="stylesheet" />
+	<script src="assets/js/pace.min.js"></script>
+	<!-- Bootstrap CSS -->
+	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&amp;display=swap" rel="stylesheet">
+	<link href="assets/css/app.css" rel="stylesheet">
+	<link href="assets/css/icons.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/css/popup_style.css" type="text/css">
+	<title>Noble-investments</title>
+</head>
 
-</head> 
-
-<body class="app app-login p-0">    	
-    <div class="row g-0 app-auth-wrapper">
-	    <div class="col-12 col-md-7 col-lg-6 auth-main-col text-center p-5">
-		    <div class="d-flex flex-column align-content-end">
-			    <div class="app-auth-body mx-auto">	
-				    <div class="app-auth-branding mb-4"><a class="app-logo" href="index.html"><img class="logo-icon mr-2" src="assets/images/app-logo.svg" alt="logo"></a></div>
-					<h2 class="auth-heading text-center mb-5">Log in to Portal</h2>
-			        <div class="auth-form-container text-left">
-						<form class="auth-form login-form">         
-							<div class="email mb-3">
-								<label class="sr-only" for="signin-email">Email</label>
-								<input id="signin-email" name="signin-email" type="email" class="form-control signin-email" placeholder="Email address" required="required">
-							</div><!--//form-group-->
-							<div class="password mb-3">
-								<label class="sr-only" for="signin-password">Password</label>
-								<input id="signin-password" name="signin-password" type="password" class="form-control signin-password" placeholder="Password" required="required">
-								<div class="extra mt-3 row justify-content-between">
-									<div class="col-6">
-										<div class="form-check">
-											<input class="form-check-input" type="checkbox" value="" id="RememberPassword">
-											<label class="form-check-label" for="RememberPassword">
-											Remember me
-											</label>
-										</div>
-									</div><!--//col-6-->
-									<div class="col-6">
-										<div class="forgot-password text-right">
-											<a href="reset-password.html">Forgot password?</a>
-										</div>
-									</div><!--//col-6-->
-								</div><!--//extra-->
-							</div><!--//form-group-->
-							<div class="text-center">
-								<button type="submit" class="btn app-btn-primary btn-block theme-btn mx-auto">Log In</button>
+<body class="bg-login">
+	<!--wrapper-->
+	<div class="wrapper">
+		<div class="section-authentication-signin d-flex align-items-center justify-content-center my-5 my-lg-0">
+			<div class="container-fluid">
+				<div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
+					<div class="col mx-auto">
+						<div class="mb-4 text-center">
+							<img src="assets/images/logo-img.png" width="180" alt="" />
+						</div>
+						<div class="card">
+							<div class="card-body">
+								<div class="border p-4 rounded">
+									<div class="text-center">
+										<h3 class="">Sign in</h3>
+										<p>Don't have an account yet? <a href="authentication-signup.php">Sign up here</a>
+										</p>
+									</div>
+									<div class="d-grid">
+										<a class="btn my-4 shadow-sm btn-white" href="javascript:;"> <span class="d-flex justify-content-center align-items-center">
+                          <img class="me-2" src="assets/images/icons/search.svg" width="16" alt="">
+                          <span>Sign in with Google</span>
+											</span>
+										</a> <a href="javascript:;" class="btn btn-facebook"><i class="bx bxl-facebook"></i>Sign in with Facebook</a>
+									</div>
+									<div class="login-separater text-center mb-4"> <span>OR SIGN IN WITH EMAIL</span>
+										<hr/>
+									</div>
+									<div class="form-body">
+										<form class="row g-3" role="form" method="post" action="">
+											<div class="col-12">
+												<label for="inputEmailAddress" class="form-label">Email Address</label>
+												<input type="email" name="c_email" value="<?php echo @$_POST['customer_email']; ?>" 
+												class="form-control" id="inputEmailAddress" placeholder="Email Address" required>
+											</div>
+											<div class="col-12">
+												<label for="inputChoosePassword" class="form-label">Enter Password</label>
+												<div class="input-group" id="show_hide_password">
+													<input type="password" name="c_pass"
+													 class="form-control border-end-0" id="inputChoosePassword"
+													  placeholder="Enter Password">
+													   <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+												</div>
+											</div>
+											<div class="col-md-6">
+												<div class="form-check form-switch">
+													<input class="form-check-input" type="checkbox"
+													 id="flexSwitchCheckChecked" checked>
+													<label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
+												</div>
+											</div>
+											<div class="col-md-6 text-end">	<a href="authentication-forgot-password.html">Forgot Password ?</a>
+											</div>
+											<div class="col-12">
+												<div class="d-grid">
+													<button type="submit" name="login_btn" class="btn btn-primary">
+														<i class="bx bxs-lock-open"></i>Sign in</button>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
 							</div>
-						</form>
-						
-						<div class="auth-option text-center pt-5">No Account? Sign up <a class="text-link" href="signup.html" >here</a>.</div>
-					</div><!--//auth-form-container-->	
-
-			    </div><!--//auth-body-->
-		    
-			    <footer class="app-auth-footer">
-				    <div class="container text-center py-3">
-				         <!--/* This template is free as long as you keep the footer attribution link. If you'd like to use the template without the attribution link, you can buy the commercial license via our website: themes.3rdwavemedia.com Thank you for your support. :) */-->
-			        <small class="copyright">Designed with <i class="fas fa-heart" style="color: #fb866a;"></i> by <a class="app-link" href="http://themes.3rdwavemedia.com" target="_blank">Xiaoying Riley</a> for developers</small>
-				       
-				    </div>
-			    </footer><!--//app-auth-footer-->	
-		    </div><!--//flex-column-->   
-	    </div><!--//auth-main-col-->
-	    <div class="col-12 col-md-5 col-lg-6 h-100 auth-background-col">
-		    <div class="auth-background-holder">
-		    </div>
-		    <div class="auth-background-mask"></div>
-		    <div class="auth-background-overlay p-3 p-lg-5">
-			    <div class="d-flex flex-column align-content-end h-100">
-				    <div class="h-100"></div>
-				    <div class="overlay-content p-3 p-lg-4 rounded">
-					    <h5 class="mb-3 overlay-title">Explore Portal Admin Template</h5>
-					    <div>Portal is a free Bootstrap 5 admin dashboard template. You can download and view the template license <a href="https://themes.3rdwavemedia.com/bootstrap-templates/admin-dashboard/portal-free-bootstrap-admin-dashboard-template-for-developers/">here</a>.</div>
-				    </div>
+						</div>
+					</div>
 				</div>
-		    </div><!--//auth-background-overlay-->
-	    </div><!--//auth-background-col-->
-    
-    </div><!--//row-->
-
-
+				<!--end row-->
+			</div>
+		</div>
+	</div>
+	<!--end wrapper-->
+	<!-- Bootstrap JS -->
+	<script src="assets/js/bootstrap.bundle.min.js"></script>
+	<!--plugins-->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
+	<script src="assets/plugins/metismenu/js/metisMenu.min.js"></script>
+	<script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
+	<!--Password show & hide js -->
+	<script>
+		$(document).ready(function () {
+			$("#show_hide_password a").on('click', function (event) {
+				event.preventDefault();
+				if ($('#show_hide_password input').attr("type") == "text") {
+					$('#show_hide_password input').attr('type', 'password');
+					$('#show_hide_password i').addClass("bx-hide");
+					$('#show_hide_password i').removeClass("bx-show");
+				} else if ($('#show_hide_password input').attr("type") == "password") {
+					$('#show_hide_password input').attr('type', 'text');
+					$('#show_hide_password i').removeClass("bx-hide");
+					$('#show_hide_password i').addClass("bx-show");
+				}
+			});
+		});
+	</script>
+	<!--app JS-->
+	<script src="assets/js/app.js"></script>
 </body>
-</html> 
-
+</html>
